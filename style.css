@@ -45,7 +45,7 @@ h1, h2, h3 {
     display: grid;
     /* Define exatamente 10 colunas de largura igual */
     grid-template-columns: repeat(10, 1fr); 
-    gap: 15px; /* Mantenha ou ajuste o espaçamento se necessário */
+    gap: 10px; /* Mantenha ou ajuste o espaçamento se necessário */
 }
 
 .questao-input {
