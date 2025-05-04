@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferência de Gabarito</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Conferência de Gabarito</h1>
+
+        <div class="selecao-prova">
+            <label for="provaTipo">Selecione o Tipo de Prova:</label>
+            <select id="provaTipo">
+                <option value="tipo1">Tipo 1</option>
+                <option value="tipo2">Tipo 2</option>
+                <option value="tipo3">Tipo 3</option>
+                </select>
+        </div>
+
+        <form id="formRespostas">
+            <h2>Digite suas Respostas (A, B, C, D ou E):</h2>
+            <div class="respostas-grid">
+                <script>
+                    const containerRespostas = document.createElement('div');
+                    containerRespostas.className = 'respostas-inputs';
+                    for (let i = 1; i <= 60; i++) {
+                        const divQuestao = document.createElement('div');
+                        divQuestao.className = 'questao-input';
+                        const label = document.createElement('label');
+                        label.htmlFor = `q${i}`;
+                        label.textContent = `${i}:`;
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.id = `q${i}`;
+                        input.name = `q${i}`;
+                        input.maxLength = 1;
+                        input.required = true;
+                        // Aceita apenas A-E (maiúsculas ou minúsculas)
+                        input.pattern = "[A-Ea-e]"; 
+                        input.setAttribute('oninput', "this.value = this.value.toUpperCase().slice(0, 1)"); // Força maiúscula e limita a 1 char
+                        divQuestao.appendChild(label);
+                        divQuestao.appendChild(input);
+                        containerRespostas.appendChild(divQuestao);
+                    }
+                    // Adiciona os inputs ao formulário onde o script está
+                    document.currentScript.parentNode.insertBefore(containerRespostas, document.currentScript); 
+                </script>
+                 </div>
+
+            <button type="button" id="submitBtn">Conferir Respostas</button>
+        </form>
+
+        <div id="resultado" class="hidden">
+            <h2>Resultado</h2>
+            <p id="score"></p>
+            <p id="mensagem"></p>
+            <img id="imagemResultado" src="" alt="Imagem do Resultado">
+            <div id="gabaritoCorreto" class="hidden">
+                 <h3>Gabarito Correto:</h3>
+                 <pre id="gabaritoTexto"></pre> </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
