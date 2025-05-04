@@ -45,7 +45,7 @@ h1, h2, h3 {
     display: grid;
     /* Define exatamente 10 colunas de largura igual */
     grid-template-columns: repeat(10, 1fr); 
-    gap: 10px; /* Mantenha ou ajuste o espaçamento se necessário */
+    gap: 8px; /* Mantenha ou ajuste o espaçamento se necessário */
 }
 
 .questao-input {
@@ -61,8 +61,8 @@ h1, h2, h3 {
 }
 
 .questao-input input[type="text"] {
-    width: 40px; /* Largura do campo de input */
-    padding: 8px;
+    width: 30px; /* Largura do campo de input */
+    padding: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
     text-align: center;
