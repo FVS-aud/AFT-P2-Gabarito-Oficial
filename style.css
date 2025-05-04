@@ -43,9 +43,9 @@ h1, h2, h3 {
 
 .respostas-inputs {
     display: grid;
-    /* Cria colunas para os inputs - ajuste o número de colunas conforme desejar */
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); 
-    gap: 15px; /* Espaçamento entre os inputs */
+    /* Define exatamente 10 colunas de largura igual */
+    grid-template-columns: repeat(10, 1fr); 
+    gap: 15px; /* Mantenha ou ajuste o espaçamento se necessário */
 }
 
 .questao-input {
