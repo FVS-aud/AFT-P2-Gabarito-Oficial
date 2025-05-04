@@ -51,12 +51,12 @@ h1, h2, h3 {
 .questao-input {
     display: flex;
     align-items: center;
-    gap: 5px; /* Espaço entre o label e o input */
+    gap: 3px; /* Espaço entre o label e o input */
 }
 
 .questao-input label {
     font-weight: bold;
-    min-width: 25px; /* Garante alinhamento */
+    min-width: 22px; /* Garante alinhamento */
     text-align: right;
 }
 
