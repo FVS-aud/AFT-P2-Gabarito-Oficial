@@ -1,3 +1,26 @@
+// --- CONFIGURAÇÃO DO FIREBASE ---
+// COLE AQUI O OBJETO firebaseConfig que você copiou do Firebase Console
+const firebaseConfig = {
+  apiKey: "AIzaSyDiBUztL8moYUYJM8877gYr3EnBXJC3Eoc",
+  authDomain: "conferencia-gabarito-app.firebaseapp.com",
+  projectId: "conferencia-gabarito-app",
+  storageBucket: "conferencia-gabarito-app.firebasestorage.app",
+  messagingSenderId: "209691343022",
+  appId: "1:209691343022:web:8e7be26bb3c9f1b580153f",
+  measurementId: "G-5C06P0EY6M"
+};
+
+// Inicializa o Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Inicializa o Firestore
+const db = firebase.firestore();
+
+// Referência para o documento de estatísticas no Firestore
+const statsDocRef = db.collection("statistics").doc("globalStats");
+
+// Variável global para guardar a instância do gráfico
+let graficoAcertosInstance = null;
 // --- GABARITOS ---
 // Adicione aqui os gabaritos corretos para cada tipo de prova.
 // Certifique-se de que cada gabarito tenha EXATAMENTE 60 respostas (A, B, C, D ou E).
@@ -132,6 +155,53 @@ function conferirRespostas() {
 
     // Opcional: Rolar a página para mostrar o resultado
     resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+    // --- BLOCO ADICIONADO PARA ATUALIZAR O FIRESTORE ---
+
+// 1. Determinar qual campo de faixa de pontuação deve ser incrementado
+let scoreRangeKey; // Variável para guardar o nome do campo no Firestore
+
+if (acertos < 36) {
+    // Se acertos for menor que 36, o campo a incrementar é 'range_lt_36'
+    scoreRangeKey = 'range_lt_36';
+} else if (acertos >= 36 && acertos <= 39) {
+    // Se acertos estiver entre 36 e 39 (inclusive), o campo é 'range_36_39'
+    scoreRangeKey = 'range_36_39';
+} else if (acertos >= 40 && acertos <= 49) {
+    // Se acertos estiver entre 40 e 49 (inclusive), o campo é 'range_40_49'
+    scoreRangeKey = 'range_40_49';
+} else { // Se não for nenhum dos anteriores, significa que é 50 a 60
+    // O campo é 'range_50_60'
+    scoreRangeKey = 'range_50_60';
+}
+
+// 2. Preparar o comando de atualização para o Firestore
+//    Queremos incrementar 'totalSubmissions' em 1 E
+//    incrementar o campo da faixa de acertos (guardado em scoreRangeKey) em 1.
+//    Usamos FieldValue.increment(1) para garantir que, mesmo se dois usuários
+//    clicarem ao mesmo tempo, os contadores sejam atualizados corretamente (atomicidade).
+const updateData = {
+    totalSubmissions: firebase.firestore.FieldValue.increment(1),
+    // A sintaxe [scoreRangeKey] permite usar o valor da variável como nome do campo
+    [scoreRangeKey]: firebase.firestore.FieldValue.increment(1)
+};
+
+// 3. Enviar o comando de atualização para o documento no Firestore
+//    Lembre-se que 'statsDocRef' foi definido no início do script como:
+//    const statsDocRef = db.collection("statistics").doc("globalStats");
+console.log("Tentando atualizar Firestore com:", updateData); // Log para depuração
+statsDocRef.update(updateData)
+    .then(() => {
+        // Código a ser executado se a atualização der CERTO
+        console.log("Estatísticas globais no Firestore atualizadas com sucesso!");
+    })
+    .catch((error) => {
+        // Código a ser executado se a atualização der ERRADO
+        console.error("Erro ao atualizar estatísticas globais no Firestore: ", error);
+        // Seria bom avisar o usuário aqui que as estatísticas globais podem não ter sido atualizadas.
+        // Ex: alert("Ocorreu um erro ao salvar as estatísticas globais. Seu resultado individual está correto, mas o gráfico geral pode não ter sido atualizado.");
+    });
+
+// --- FIM DO BLOCO ADICIONADO ---
 }
 
 // --- EVENT LISTENER ---
