@@ -3,24 +3,44 @@
 // ========================================================================
 
 // --- CONFIGURAÇÃO DO FIREBASE ---
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
+// Objeto com suas credenciais (Verifique se estão corretas!)
 const firebaseConfig = {
   apiKey: "AIzaSyCqueuFjV1FeBgdfMtG4PIt9KkvMznAhhg",
   authDomain: "conferencia-gabarito-app-8dbd0.firebaseapp.com",
   projectId: "conferencia-gabarito-app-8dbd0",
-  storageBucket: "conferencia-gabarito-app-8dbd0.firebasestorage.app",
+  storageBucket: "conferencia-gabarito-app-8dbd0.appspot.com", // Verifique se termina com appspot.com ou firebasestorage.app no seu console
   messagingSenderId: "435528200039",
   appId: "1:435528200039:web:40fd7fb07b23cf1fecc9c2"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// --- DECLARAÇÃO DAS VARIÁVEIS GLOBAIS DO FIREBASE ---
+// Declaradas aqui FORA do try/catch para serem acessíveis globalmente no script
+let db;
+let statsDocRef;
 
+// --- INICIALIZAÇÃO DO FIREBASE E FIRESTORE (Estilo v8/Compat CORRIGIDO) ---
+try {
+    // Inicializa o Firebase (usa o objeto 'firebase' global dos scripts -compat.js)
+    firebase.initializeApp(firebaseConfig);
+
+    // ATRIBUI os valores às variáveis declaradas fora do try
+    db = firebase.firestore();
+    statsDocRef = db.collection("statistics").doc("globalStats");
+
+    console.log("Firebase inicializado com sucesso e variáveis db/statsDocRef definidas.");
+
+} catch (error) {
+    console.error("Erro CRÍTICO ao inicializar o Firebase:", error);
+    alert("ERRO GRAVE: Não foi possível conectar ao Firebase. Verifique as credenciais, a conexão e o console (F12).");
+    // Impede a continuação se o Firebase não inicializar
+    throw new Error("Falha na inicialização do Firebase.");
+}
+
+// --- VARIÁVEL GLOBAL PARA O GRÁFICO ---
+let graficoAcertosInstance = null;
+
+// --- GABARITOS ---
+// const gabaritos = { ... }; // << Seu objeto gabaritos vem aqui
 // --- INICIALIZAÇÃO DO FIREBASE E FIRESTORE ---
 try {
     firebase.initializeApp(firebaseConfig);
