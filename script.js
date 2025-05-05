@@ -213,7 +213,7 @@ function conferirRespostas() {
 // --- FUNÇÃO PARA ATUALIZAR GRÁFICO E CONTAGEM ---
 function atualizarGraficoEstatisticas(data) {
     console.log("Atualizando gráfico com dados:", data);
-
+    console.log("Dentro de atualizarGraficoEstatisticas - typeof totalPessoasSpan:", typeof totalPessoasSpan);
     // Verifica se os elementos HTML necessários existem
     if (!totalPessoasSpan || !graficoCanvas || !estatisticasDiv) {
         console.error("Elementos HTML para estatísticas não encontrados ao tentar atualizar gráfico.");
