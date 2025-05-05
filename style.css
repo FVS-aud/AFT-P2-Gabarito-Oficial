@@ -178,3 +178,9 @@ button:hover {
 /* Opcional: Se a regra H1 geral estiver afetando, pode ser necessário ajustar */
 /* Se você ainda tiver a regra 'h1, h2, h3 { ... }', pode deixar como está
    ou remover 'text-align: center;' dela se quiser que o .title-container controle o centro */
+/* Estilo para destacar inputs com resposta errada */
+.input-errado {
+    background-color: #ffdddd; /* Fundo vermelho claro */
+    border-color: #ff8888; /* Borda vermelha mais forte */
+    color: #d8000c; /* Opcional: Cor do texto escura para contraste */
+}
