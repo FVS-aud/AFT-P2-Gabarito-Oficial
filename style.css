@@ -44,7 +44,7 @@ h1, h2, h3 {
 .respostas-inputs {
     display: grid;
     /* Define exatamente 10 colunas de largura igual */
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); 
+    grid-template-columns: repeat(10, 1fr); 
     gap: 8px; /* Mantenha ou ajuste o espaçamento se necessário */
 }
 
@@ -152,3 +152,29 @@ button:hover {
     font-weight: bold;
     font-size: 1.1em;
 }
+/* Container para alinhar título e imagem */
+.title-container {
+    display: flex; /* Usa Flexbox para alinhar itens na horizontal */
+    align-items: center; /* Alinha verticalmente ao centro */
+    justify-content: center; /* Centraliza o conteúdo horizontalmente */
+    gap: 15px; /* Espaço entre a imagem e o título */
+    margin-bottom: 20px; /* Mantém a margem inferior que o h1 tinha */
+}
+
+/* Estilo para a imagem do logo no título */
+.title-logo {
+    height: 100px; /* Ajuste a altura da imagem conforme necessário */
+    width: auto; /* Mantém a proporção da imagem */
+    border-radius: 5px; /* Opcional: adiciona cantos arredondados */
+}
+
+/* Estilo específico para o H1 dentro do container (para cor e remover margem padrão) */
+.title-container h1 {
+    color: #0000FF; /* Define a cor do texto como azul (pode usar 'blue' ou um tom específico) */
+    margin: 0; /* Remove margens padrão do h1 para melhor alinhamento com flexbox */
+    /* A cor #333 e text-align: center da regra geral h1,h2,h3 serão sobrescritas */
+}
+
+/* Opcional: Se a regra H1 geral estiver afetando, pode ser necessário ajustar */
+/* Se você ainda tiver a regra 'h1, h2, h3 { ... }', pode deixar como está
+   ou remover 'text-align: center;' dela se quiser que o .title-container controle o centro */
