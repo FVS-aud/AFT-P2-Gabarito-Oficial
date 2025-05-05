@@ -382,18 +382,28 @@ if (formRespostas) {
 }
 
 
-// 3. Gatilho para iniciar o listener do Firebase QUANDO a página carregar
-//    'DOMContentLoaded' espera o HTML estar pronto antes de rodar o JavaScript interno.
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Evento DOMContentLoaded disparado.");
-    // Verifica se o Firebase foi inicializado corretamente antes de configurar o listener
-    if (typeof firebase !== 'undefined' && typeof db !== 'undefined' && typeof statsDocRef !== 'undefined') {
-        setupRealtimeUpdates(); // Chama a função para começar a ouvir as atualizações do Firestore
-    } else {
-        console.error("Firebase não parece estar inicializado corretamente. Listener não será configurado.");
-        alert("Erro Crítico: Falha na inicialização do sistema de estatísticas.");
-    }
-});
+// --- INICIALIZAÇÃO QUANDO A PÁGINA CARREGA (COM MAIS LOGS) ---
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("Evento DOMContentLoaded disparado.");
+
+        // LOG ADICIONAL: Verificar o estado das variáveis neste momento
+        console.log("Verificando variáveis no DOMContentLoaded:");
+        console.log("typeof firebase:", typeof firebase); // << O que aparece aqui?
+        console.log("typeof db:", typeof db); // << O que aparece aqui?
+        console.log("typeof statsDocRef:", typeof statsDocRef); // << O que aparece aqui?
+
+        // A verificação original
+        if (typeof firebase !== 'undefined' && typeof db !== 'undefined' && typeof statsDocRef !== 'undefined') {
+            console.log("Firebase, db e statsDocRef parecem definidos. Chamando setupRealtimeUpdates...");
+            setupRealtimeUpdates();
+        } else {
+            console.error("Firebase não parece estar inicializado corretamente. Listener não será configurado.");
+            if (typeof firebase === 'undefined') console.error("--> Objeto 'firebase' global está undefined.");
+            if (typeof db === 'undefined') console.error("--> Variável 'db' (Firestore) está undefined.");
+            if (typeof statsDocRef === 'undefined') console.error("--> Variável 'statsDocRef' (Referência Doc) está undefined.");
+            alert("Erro Crítico: Falha na inicialização do sistema de estatísticas após o carregamento da página.");
+        }
+    });
 
 console.log("Fim do script.js alcançado.");
 // ========================================================================
