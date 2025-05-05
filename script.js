@@ -1,5 +1,8 @@
+// ========================================================================
+// ARQUIVO: script.js - Conferência de Gabarito com Estatísticas Firebase
+// ========================================================================
+
 // --- CONFIGURAÇÃO DO FIREBASE ---
-// Objeto com suas credenciais (Verifique se estão corretas!)
 const firebaseConfig = {
   apiKey: "AIzaSyCqueuFjV1FeBgdfMtG4PIt9KkvMznAhhg", // Substitua se for diferente
   authDomain: "conferencia-gabarito-app-8dbd0.firebaseapp.com", // Substitua se for diferente
@@ -9,32 +12,28 @@ const firebaseConfig = {
   appId: "1:435528200039:web:40fd7fb07b23cf1fecc9c2" // Substitua se for diferente
 };
 
-// --- DECLARAÇÃO DAS VARIÁVEIS GLOBAIS DO FIREBASE ---
+// --- DECLARAÇÃO DAS VARIÁVEIS GLOBAIS ---
+// Firebase
 let db;
 let statsDocRef;
-
-// --- DECLARAÇÃO DAS VARIÁVEIS GLOBAIS DO GRÁFICO/ESTATÍSTICAS ---
+// DOM - Formulário e Resultado
+let tipoProvaSelect, formRespostas, submitBtn, resultadoDiv, scoreP, mensagemP, imagemResultadoImg, gabaritoCorretoDiv, gabaritoTextoPre;
+// DOM - Estatísticas e Gráfico
 let estatisticasDiv;
 let totalPessoasSpan;
-let graficoCanvasElement; // Variável para o elemento <canvas>
-let graficoContext;     // Variável para o contexto de desenho 2D
-let graficoAcertosInstance = null; // Guarda a instância do Chart.js
+let graficoCanvasElement;
+let graficoContext;
+let graficoAcertosInstance = null;
 
 // --- INICIALIZAÇÃO DO FIREBASE E FIRESTORE ---
 try {
-    // Inicializa o Firebase (usa o objeto 'firebase' global dos scripts -compat.js)
     firebase.initializeApp(firebaseConfig);
-
-    // ATRIBUI os valores às variáveis globais declaradas fora do try
     db = firebase.firestore();
     statsDocRef = db.collection("statistics").doc("globalStats");
-
     console.log("Firebase inicializado com sucesso e variáveis db/statsDocRef definidas.");
-
 } catch (error) {
     console.error("Erro CRÍTICO ao inicializar o Firebase:", error);
     alert("ERRO GRAVE: Não foi possível conectar ao Firebase. Verifique as credenciais, a conexão e o console (F12).");
-    // Impede a continuação se o Firebase não inicializar
     throw new Error("Falha na inicialização do Firebase.");
 }
 
@@ -48,25 +47,23 @@ const gabaritos = {
         'E', 'E', 'D', 'D', 'C', 'D', 'E', 'C', 'A', 'E', // 41-50
         'D', 'A', 'A', 'B', 'D', 'E', 'B', 'E', 'D', 'E'  // 51-60
     ],
-    // Adicione outros tipos se necessário
 };
 console.log("Gabaritos carregados.");
 
 // --- ELEMENTOS DO DOM (HTML) ---
-// É crucial que os IDs no HTML correspondam exatamente aos usados aqui.
-let domElementsOk = true; // Flag para verificar se todos os elementos essenciais foram encontrados
-
+// Atribui os elementos às variáveis globais declaradas com 'let' acima
+let domElementsOk = true;
 try {
-    // Elementos do Formulário e Resultado Individual (usando 'const')
-    const tipoProvaSelect = document.getElementById('provaTipo');
-    const formRespostas = document.getElementById('formRespostas');
-    const submitBtn = document.getElementById('submitBtn');
-    const resultadoDiv = document.getElementById('resultado');
-    const scoreP = document.getElementById('score');
-    const mensagemP = document.getElementById('mensagem');
-    const imagemResultadoImg = document.getElementById('imagemResultado');
-    const gabaritoCorretoDiv = document.getElementById('gabaritoCorreto');
-    const gabaritoTextoPre = document.getElementById('gabaritoTexto');
+    // Elementos do Formulário e Resultado Individual
+    tipoProvaSelect = document.getElementById('provaTipo');
+    formRespostas = document.getElementById('formRespostas');
+    submitBtn = document.getElementById('submitBtn');
+    resultadoDiv = document.getElementById('resultado');
+    scoreP = document.getElementById('score');
+    mensagemP = document.getElementById('mensagem');
+    imagemResultadoImg = document.getElementById('imagemResultado');
+    gabaritoCorretoDiv = document.getElementById('gabaritoCorreto');
+    gabaritoTextoPre = document.getElementById('gabaritoTexto');
 
     // Verifica se elementos essenciais do formulário/resultado existem
     if (!tipoProvaSelect || !formRespostas || !submitBtn || !resultadoDiv || !scoreP || !mensagemP || !imagemResultadoImg || !gabaritoCorretoDiv || !gabaritoTextoPre) {
@@ -74,26 +71,25 @@ try {
         domElementsOk = false;
     }
 
-    // Elementos das Estatísticas Gerais (atribuindo às variáveis 'let' globais)
+    // Elementos das Estatísticas Gerais
     estatisticasDiv = document.getElementById('estatisticasGerais');
     totalPessoasSpan = document.getElementById('totalPessoas');
-    graficoCanvasElement = document.getElementById('graficoAcertos'); // Pega o elemento <canvas>
+    graficoCanvasElement = document.getElementById('graficoAcertos');
 
     // Verifica se elementos de estatísticas existem
     if (!estatisticasDiv || !totalPessoasSpan || !graficoCanvasElement) {
         console.warn("Aviso: Um ou mais elementos HTML para estatísticas não foram encontrados. A seção de estatísticas pode não funcionar.");
-        // Não definimos domElementsOk como false aqui, talvez estatísticas sejam opcionais
     } else {
         // Tenta pegar o contexto SOMENTE se o canvas foi encontrado
         try {
-            graficoContext = graficoCanvasElement.getContext('2d'); // Pega o contexto 2D
+            graficoContext = graficoCanvasElement.getContext('2d');
             if (!graficoContext) {
                  console.error("ERRO: Falha ao obter o contexto 2D do canvas. O gráfico não funcionará.");
-                 domElementsOk = false; // Se o contexto falhar, consideramos um erro crítico para o gráfico
+                 // Considerar domElementsOk = false se o gráfico for essencial
             }
         } catch (canvasError) {
             console.error("Erro ao obter contexto 2D do canvas:", canvasError);
-            domElementsOk = false;
+            domElementsOk = false; // Erro no contexto é problemático
         }
     }
 
@@ -101,11 +97,10 @@ try {
         console.log("Referências DOM obtidas com sucesso.");
     } else {
          alert("ERRO GRAVE: Falha ao carregar elementos essenciais da página. Verifique o console (F12) e os IDs no HTML.");
-         throw new Error("Falha ao obter elementos DOM essenciais."); // Para o script se algo crítico faltar
+         throw new Error("Falha ao obter elementos DOM essenciais.");
     }
 
 } catch (error) {
-    // Captura erros inesperados durante a busca de elementos
     console.error("Erro inesperado ao obter referências DOM:", error);
     alert("ERRO GRAVE: Falha inesperada ao preparar a página. Verifique o console (F12).");
     throw new Error("Falha inesperada na obtenção de elementos DOM.");
@@ -114,15 +109,19 @@ try {
 
 // --- FUNÇÃO PRINCIPAL DE CONFERÊNCIA ---
 function conferirRespostas() {
-    // Verifica se o botão que chamou a função existe (redundante, mas seguro)
-    if (!submitBtn) {
-        console.error("Botão de submissão não encontrado ao tentar conferir.");
-        return;
+    console.log("Função conferirRespostas INICIADA.");
+
+    // Verifica se elementos essenciais usados aqui existem (agora globais)
+    if (!tipoProvaSelect || !gabaritos || !resultadoDiv || !scoreP || !mensagemP || !imagemResultadoImg || !gabaritoCorretoDiv || !gabaritoTextoPre) {
+         console.error("Erro dentro de conferirRespostas: Elementos DOM ou gabaritos essenciais estão faltando.");
+         alert("Erro interno ao tentar conferir. Elementos da página não encontrados.");
+         return;
     }
+
     console.log("Iniciando conferência de respostas...");
 
     // 1. Obter tipo de prova e gabarito oficial
-    const tipoSelecionado = tipoProvaSelect.value;
+    const tipoSelecionado = tipoProvaSelect.value; // Usa a variável global tipoProvaSelect
     const gabaritoOficial = gabaritos[tipoSelecionado];
 
     if (!gabaritoOficial) {
@@ -143,26 +142,22 @@ function conferirRespostas() {
         if (!input) {
             console.error(`Erro: Input q${i} não encontrado!`);
             alert(`Erro interno: Campo da questão ${i} não encontrado.`);
-            return; // Para a execução
+            return;
         }
         const valor = input.value.trim().toUpperCase();
-        // Verifica se não está vazio E se é A, B, C, D ou E
         if (!valor || !/^[A-E]$/.test(valor)) {
            input.style.borderColor = 'red';
            todasPreenchidas = false;
-           // Não adiciona valor inválido ao array
         } else {
            input.style.borderColor = '#ccc';
-           respostasUsuario.push(valor); // Adiciona apenas se válido
+           respostasUsuario.push(valor);
         }
     }
 
-    // Verifica se exatamente 60 respostas válidas foram coletadas
     if (!todasPreenchidas || respostasUsuario.length !== 60) {
         alert('Por favor, preencha todas as 60 questões com uma letra válida de A a E.');
-        // Esconde resultados anteriores se houver erro de preenchimento
-        if(resultadoDiv) resultadoDiv.classList.add('hidden');
-        if(gabaritoCorretoDiv) gabaritoCorretoDiv.classList.add('hidden');
+        resultadoDiv.classList.add('hidden');
+        gabaritoCorretoDiv.classList.add('hidden');
         return;
     }
     console.log("Respostas do usuário coletadas e validadas.");
@@ -197,28 +192,24 @@ function conferirRespostas() {
     }
 
     // 5. Exibir Resultado Individual na Tela
-    if (scoreP) scoreP.textContent = `Você acertou ${acertos} de 60 questões.`;
-    if (mensagemP) mensagemP.textContent = mensagem;
-    if (imagemResultadoImg) {
-         imagemResultadoImg.src = imagemSrc;
-         imagemResultadoImg.alt = `Resultado: ${acertos} acertos`;
-    }
-    if (resultadoDiv) resultadoDiv.classList.remove('hidden');
+    scoreP.textContent = `Você acertou ${acertos} de 60 questões.`;
+    mensagemP.textContent = mensagem;
+    imagemResultadoImg.src = imagemSrc;
+    imagemResultadoImg.alt = `Resultado: ${acertos} acertos`;
+    resultadoDiv.classList.remove('hidden');
 
     // Exibir Gabarito Correto
-    if (gabaritoTextoPre && gabaritoCorretoDiv) {
-        let gabaritoFormatado = `Gabarito Oficial - ${tipoSelecionado.toUpperCase()}:\n\n`;
-        for(let i = 0; i < gabaritoOficial.length; i++) {
-            gabaritoFormatado += `${String(i + 1).padStart(2, '0')}: ${gabaritoOficial[i]}   `;
-            if ((i + 1) % 10 === 0) { gabaritoFormatado += '\n'; }
-        }
-        gabaritoTextoPre.textContent = gabaritoFormatado;
-        gabaritoCorretoDiv.classList.remove('hidden');
+    let gabaritoFormatado = `Gabarito Oficial - ${tipoSelecionado.toUpperCase()}:\n\n`;
+    for(let i = 0; i < gabaritoOficial.length; i++) {
+        gabaritoFormatado += `${String(i + 1).padStart(2, '0')}: ${gabaritoOficial[i]}   `;
+        if ((i + 1) % 10 === 0) { gabaritoFormatado += '\n'; }
     }
+    gabaritoTextoPre.textContent = gabaritoFormatado;
+    gabaritoCorretoDiv.classList.remove('hidden');
+
 
     // 6. ATUALIZAR ESTATÍSTICAS GLOBAIS NO FIRESTORE
     try {
-        // Verifica se a referência ao doc do Firestore existe
         if (!statsDocRef) throw new Error("Referência do Firestore (statsDocRef) não está definida.");
 
         let scoreRangeKey;
@@ -247,7 +238,7 @@ function conferirRespostas() {
     }
 
     // 7. Opcional: Rolar a página para mostrar o resultado individual
-    if(resultadoDiv) resultadoDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    resultadoDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     console.log("Fim da conferência de respostas.");
 } // --- FIM da função conferirRespostas ---
@@ -256,7 +247,6 @@ function conferirRespostas() {
 // --- FUNÇÃO PARA ATUALIZAR GRÁFICO E CONTAGEM ---
 function atualizarGraficoEstatisticas(data) {
     // Verifica se os elementos/contexto necessários (globais) existem
-    // Se algum destes faltar, a função não pode continuar.
     if (!totalPessoasSpan || !graficoContext || !estatisticasDiv) {
         console.error("Elementos HTML/Contexto essenciais para estatísticas não estão definidos. Não é possível atualizar o gráfico.");
         return;
@@ -266,18 +256,18 @@ function atualizarGraficoEstatisticas(data) {
 
     // Trata o caso de não haver dados válidos recebidos do Firestore
     if (!data || data.totalSubmissions === undefined || data.totalSubmissions === null) {
-         totalPessoasSpan.textContent = "0"; // Mostra 0 no contador
+         totalPessoasSpan.textContent = "0";
          if (graficoAcertosInstance) {
-             graficoAcertosInstance.destroy(); // Destroi gráfico antigo se existir
+             graficoAcertosInstance.destroy();
              graficoAcertosInstance = null;
          }
-         estatisticasDiv.classList.add('hidden'); // Esconde a seção de estatísticas
+         estatisticasDiv.classList.add('hidden');
          console.log("Sem dados de estatísticas válidos para exibir.");
          return;
     }
 
     // Processa os dados recebidos
-    const totalSubmissions = data.totalSubmissions || 0; // Garante que é um número
+    const totalSubmissions = data.totalSubmissions || 0;
     const ranges = {
         '< 36': data.range_lt_36 || 0,
         '36-39': data.range_36_39 || 0,
@@ -290,20 +280,20 @@ function atualizarGraficoEstatisticas(data) {
 
     // Só mostra a seção e desenha/atualiza o gráfico se houver submissões
     if (totalSubmissions > 0) {
-         estatisticasDiv.classList.remove('hidden'); // Mostra a seção
+         estatisticasDiv.classList.remove('hidden');
 
         // Prepara dados para o Chart.js
         const labels = Object.keys(ranges);
         const values = Object.values(ranges);
 
-        // Destrói o gráfico anterior se ele já existir (para evitar sobreposição)
+        // Destrói o gráfico anterior se ele já existir
         if (graficoAcertosInstance) {
             graficoAcertosInstance.destroy();
         }
 
         // Cria um novo gráfico Chart.js
         try {
-            graficoAcertosInstance = new Chart(graficoContext, { // Usa a variável global graficoContext
+            graficoAcertosInstance = new Chart(graficoContext, { // Usa graficoContext
                 type: 'pie',
                 data: {
                     labels: labels,
@@ -354,7 +344,6 @@ function atualizarGraficoEstatisticas(data) {
         }
 
     } else {
-        // Se totalSubmissions for 0, garante que a seção está escondida e não há gráfico
          estatisticasDiv.classList.add('hidden');
          if (graficoAcertosInstance) {
              graficoAcertosInstance.destroy();
@@ -369,30 +358,24 @@ function atualizarGraficoEstatisticas(data) {
 function setupRealtimeUpdates() {
     console.log("Configurando listener de atualizações em tempo real do Firestore...");
 
-    // Verifica se a referência ao documento do Firestore foi definida na inicialização
     if (!statsDocRef) {
         console.error("Não é possível configurar o listener: statsDocRef não está definido.");
         alert("Erro grave: Falha ao conectar ao banco de dados de estatísticas.");
-        return; // Não continua se a referência não existir
+        return;
     }
 
-    // Configura o listener que reage a mudanças no documento
     statsDocRef.onSnapshot((doc) => {
-        // Chamado quando os dados são lidos/atualizados com sucesso
         if (doc.exists) {
             console.log("Dados das estatísticas recebidos/atualizados:", doc.data());
-            atualizarGraficoEstatisticas(doc.data()); // Chama a função para redesenhar o gráfico
+            atualizarGraficoEstatisticas(doc.data());
         } else {
-            // Se o documento 'globalStats' for deletado no Firebase
             console.warn("Documento de estatísticas ('globalStats') não encontrado no Firestore!");
-            atualizarGraficoEstatisticas(null); // Atualiza para mostrar estado vazio/zero
+            atualizarGraficoEstatisticas(null);
         }
     }, (error) => {
-        // Chamado se ocorrer um erro ao ouvir o Firestore
         console.error("Erro no listener do Firestore (onSnapshot): ", error);
-        if(totalPessoasSpan) totalPessoasSpan.textContent = "Erro"; // Mostra erro se o span existir
+        if(totalPessoasSpan) totalPessoasSpan.textContent = "Erro";
         alert("Falha ao carregar estatísticas em tempo real. Verifique sua conexão ou as permissões do Firebase.");
-        // Esconde a seção de estatísticas em caso de erro
         if(estatisticasDiv) estatisticasDiv.classList.add('hidden');
         if (graficoAcertosInstance) {
             graficoAcertosInstance.destroy();
@@ -406,34 +389,39 @@ function setupRealtimeUpdates() {
 // --- EVENT LISTENERS (GATILHOS DE AÇÃO) ---
 
 // 1. Gatilho para o botão "Conferir Respostas"
-// Verifica se o botão existe ANTES de adicionar o listener
-if (submitBtn) {
-    submitBtn.addEventListener('click', conferirRespostas);
+console.log("Tentando adicionar listener ao botão...");
+if (submitBtn) { // Verifica se a variável submitBtn (agora global) foi definida
+    submitBtn.addEventListener('click', function() {
+        console.log("Botão 'Conferir' CLICADO!");
+        try { // Adiciona try/catch em volta da chamada para pegar erros imediatos
+             conferirRespostas();
+        } catch (error) {
+             console.error("Erro CRÍTICO ao executar conferirRespostas:", error);
+             alert("Ocorreu um erro inesperado ao processar suas respostas. Verifique o console (F12).");
+        }
+    });
     console.log("Listener do botão 'Conferir' adicionado.");
 } else {
-    console.error("Botão 'submitBtn' não encontrado no HTML. A conferência não funcionará.");
-    // Considerar alertar o usuário se o botão for essencial
-    // alert("ERRO GRAVE: Botão principal não encontrado!");
+    console.error("Botão 'submitBtn' não encontrado ou não definido. A conferência não funcionará.");
+    alert("ERRO GRAVE: Botão principal não encontrado!");
 }
 
 // 2. Gatilho opcional para permitir submeter com Enter
 if (formRespostas) {
     formRespostas.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
-            event.preventDefault(); // Impede envio padrão do formulário
+            event.preventDefault();
             try {
                  const currentInput = event.target;
-                 // Verifica se o evento veio de um dos inputs q1-q60
                  if (currentInput && currentInput.id && currentInput.id.startsWith('q')) {
                      const currentId = parseInt(currentInput.id.replace('q',''));
                      if(!isNaN(currentId) && currentId < 60) {
                          const nextInput = document.getElementById(`q${currentId + 1}`);
-                         if(nextInput) nextInput.focus(); // Foca no próximo
+                         if(nextInput) nextInput.focus();
                      } else if (submitBtn) {
-                          submitBtn.click(); // Clica no botão se for o último input
+                          submitBtn.click();
                      }
                  } else if (submitBtn) {
-                     // Se pressionar Enter em outro lugar do form, clica no botão
                      submitBtn.click();
                  }
             } catch (e) { console.warn("Erro na navegação com Enter:", e); }
@@ -455,10 +443,14 @@ document.addEventListener('DOMContentLoaded', () => {
         setupRealtimeUpdates(); // Começa a ouvir o Firestore
     } else {
         console.error("Firebase ou referências essenciais (db, statsDocRef) não estão prontos no DOMContentLoaded. Listener não será configurado.");
-        // Detalha o que pode estar faltando
         if (typeof firebase === 'undefined') console.error("--> Objeto 'firebase' global está undefined.");
         if (!db) console.error("--> Variável 'db' (Firestore) não está definida.");
         if (!statsDocRef) console.error("--> Variável 'statsDocRef' (Referência Doc) não está definida.");
         alert("Erro Crítico: Falha na inicialização do sistema de estatísticas após o carregamento da página. Verifique o console (F12).");
     }
 });
+
+console.log("Fim do script.js alcançado.");
+// ========================================================================
+// FIM DO ARQUIVO script.js
+// ========================================================================
