@@ -91,18 +91,20 @@ const gabaritos = {
     }
 
 
-    // --- FUNÇÃO DE VALIDAÇÃO DA INSCRIÇÃO ---
-    function validarInscricao(inscricao) {
-        if (!inscricao) {
-            return { valido: false, mensagem: "Número de inscrição não pode estar vazio." };
-        }
-        // Regex: Deve começar com '24', ter 10 dígitos, terceiro dígito 0 ou 1.
-        const regex = /^24[0-1]\d{7}$/;
-        if (!regex.test(inscricao)) {
-            return { valido: false, mensagem: "Formato inválido. Use 10 dígitos começando com 240 ou 241 (Ex: 2401234567)." };
-        }
-        return { valido: true, mensagem: "Inscrição válida." };
+// --- FUNÇÃO DE VALIDAÇÃO DA INSCRIÇÃO (ATUALIZADA PARA 8 DÍGITOS) ---
+function validarInscricao(inscricao) {
+    if (!inscricao) {
+        return { valido: false, mensagem: "Número de inscrição não pode estar vazio." };
     }
+    // Regex: Deve conter exatamente 8 dígitos numéricos.
+    const regex = /^\d{8}$/;
+    if (!regex.test(inscricao)) {
+        // Mensagem de erro mais genérica para 8 dígitos
+        return { valido: false, mensagem: "Formato inválido. Use exatamente 8 dígitos numéricos (Ex: 10000###)." };
+    }
+    // Se chegou aqui, o formato está correto
+    return { valido: true, mensagem: "Inscrição válida." };
+}
 
 
     // --- FUNÇÃO PRINCIPAL DE CONFERÊNCIA ---
