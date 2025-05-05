@@ -63,6 +63,118 @@ const imagemResultadoImg = document.getElementById('imagemResultado');
 const gabaritoCorretoDiv = document.getElementById('gabaritoCorreto');
 const gabaritoTextoPre = document.getElementById('gabaritoTexto');
 
+// --- ELEMENTOS DO DOM PARA ESTATÍSTICAS ---
+const estatisticasDiv = document.getElementById('estatisticasGerais');
+const totalPessoasSpan = document.getElementById('totalPessoas');
+const graficoCanvas = document.getElementById('graficoAcertos').getContext('2d');
+
+// --- FUNÇÃO PARA ATUALIZAR GRÁFICO E CONTAGEM ---
+function atualizarGraficoEstatisticas(data) {
+    if (!data) {
+         totalPessoasSpan.textContent = "N/A";
+         return; // Sai se não houver dados
+    }
+
+    const totalSubmissions = data.totalSubmissions || 0;
+    const ranges = {
+        '< 36': data.range_lt_36 || 0,
+        '36-39': data.range_36_39 || 0,
+        '40-49': data.range_40_49 || 0,
+        '50-60': data.range_50_60 || 0
+    };
+
+    totalPessoasSpan.textContent = totalSubmissions;
+
+    const labels = Object.keys(ranges);
+    const values = Object.values(ranges);
+
+    // Destruir gráfico anterior se existir para evitar sobreposição
+    if (graficoAcertosInstance) {
+        graficoAcertosInstance.destroy();
+    }
+
+    // Criar novo gráfico de setores (pie chart)
+    graficoAcertosInstance = new Chart(graficoCanvas, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '% de Pessoas por Faixa de Acerto',
+                data: values,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)', // < 36 (Vermelho)
+                    'rgba(255, 206, 86, 0.7)', // 36-39 (Amarelo)
+                    'rgba(75, 192, 192, 0.7)', // 40-49 (Verde/Azul)
+                    'rgba(54, 162, 235, 0.7)'  // 50-60 (Azul)
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            const value = context.parsed || 0;
+                            const sum = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = sum === 0 ? 0 : ((value / sum) * 100);
+                            label += `<span class="math-inline">\{value\} \(</span>{percentage.toFixed(1)}%)`;
+                            return label;
+                        }
+                    }
+                },
+                title: {
+                     display: true,
+                     text: 'Distribuição de Acertos'
+                }
+            }
+        }
+    });
+
+    // Mostra a seção de estatísticas se estava escondida
+     if (totalSubmissions > 0) {
+         estatisticasDiv.classList.remove('hidden');
+     }
+}
+
+// --- CONFIGURA O LISTENER EM TEMPO REAL DO FIRESTORE ---
+function setupRealtimeUpdates() {
+    statsDocRef.onSnapshot((doc) => {
+        if (doc.exists) {
+            console.log("Dados das estatísticas recebidos:", doc.data());
+            atualizarGraficoEstatisticas(doc.data());
+        } else {
+            console.log("Documento de estatísticas não encontrado!");
+            // Você pode querer criar o documento aqui se ele não existir
+            // ou apenas mostrar '0' nos dados.
+             atualizarGraficoEstatisticas(null); // Passa null para indicar sem dados
+        }
+    }, (error) => {
+        console.error("Erro ao buscar estatísticas em tempo real: ", error);
+         totalPessoasSpan.textContent = "Erro";
+        // Informar o usuário sobre o problema de conexão
+    });
+}
+
+// --- INICIALIZAÇÃO QUANDO A PÁGINA CARREGA ---
+document.addEventListener('DOMContentLoaded', () => {
+    setupRealtimeUpdates(); // Começa a ouvir as atualizações do Firestore
+});
+
 // --- FUNÇÃO PRINCIPAL DE CONFERÊNCIA ---
 function conferirRespostas() {
     const tipoSelecionado = tipoProvaSelect.value;
