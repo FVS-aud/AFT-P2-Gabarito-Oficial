@@ -40,26 +40,6 @@ try {
 let graficoAcertosInstance = null;
 
 // --- GABARITOS ---
-// const gabaritos = { ... }; // << Seu objeto gabaritos vem aqui
-// --- INICIALIZAÇÃO DO FIREBASE E FIRESTORE ---
-try {
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    // Referência direta ao documento onde as estatísticas serão salvas
-    const statsDocRef = db.collection("statistics").doc("globalStats");
-    console.log("Firebase inicializado com sucesso.");
-} catch (error) {
-    console.error("Erro ao inicializar o Firebase:", error);
-    alert("ERRO GRAVE: Não foi possível conectar ao Firebase. Verifique as credenciais e a conexão.");
-}
-
-
-// --- VARIÁVEL GLOBAL PARA O GRÁFICO ---
-// Guarda a instância do gráfico Chart.js para poder atualizá-la/destruí-la
-let graficoAcertosInstance = null;
-
-console.log("Variáveis globais e Firebase prontos.");
-// --- GABARITOS ---
 // Adicione aqui os gabaritos corretos para cada tipo de prova.
 // Certifique-se de que cada gabarito tenha EXATAMENTE 60 respostas (A, B, C, D ou E).
 const gabaritos = {
