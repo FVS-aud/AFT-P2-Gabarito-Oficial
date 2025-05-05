@@ -15,8 +15,6 @@
             <label for="provaTipo">Selecione o Tipo de Prova:</label>
             <select id="provaTipo">
                 <option value="tipo1">A prudência evita muitos dissabores</option>
-                <option value="tipo2">Tipo 2</option>
-                <option value="tipo3">Tipo 3</option>
                 </select>
         </div>
 
@@ -62,8 +60,20 @@
                  <h3>Gabarito Correto:</h3>
                  <pre id="gabaritoTexto"></pre> </div>
         </div>
+	
+	<div id="estatisticasGerais" class="hidden">
+    		<h2>Estatísticas Gerais (Todos os Usuários)</h2>
+    		<p>Total de Pessoas que já preencheram: <span id="totalPessoas">Carregando...</span></p>
+    		<div style="max-width: 400px; margin: 20px auto;">
+         		<canvas id="graficoAcertos"></canvas>
+    	</div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="script.js"></script>
+
 </body>
 </html>
