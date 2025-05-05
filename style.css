@@ -44,7 +44,7 @@ h1, h2, h3 {
 .respostas-inputs {
     display: grid;
     /* Define exatamente 10 colunas de largura igual */
-    grid-template-columns: repeat(10, 1fr); 
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); 
     gap: 8px; /* Mantenha ou ajuste o espaçamento se necessário */
 }
 
